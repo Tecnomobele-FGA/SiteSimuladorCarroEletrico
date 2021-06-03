@@ -2,7 +2,7 @@
 O site https://tecnomobele-unb.web.app/#/ foi criado em flutter/dart.
 
 
-###### Calculando com o GPS do dispositivo
+## Calculando com o GPS do dispositivo
 
 Para colhermos os dados do GPS do dispositivo, foi utilizada a biblioteca [geolocator](https://pub.dev/packages/geolocator).
 Como podemos ver, a cada segundo a localização é adicionada em seu respectivo array.
@@ -62,7 +62,7 @@ Logo após, se a potência naquele ponto for maior que a variável potMax, entã
   ```
 
 
-###### Calculando com o arquivo GPX
+## Calculando com o arquivo GPX
 
 Do arquivo GPX, é extraido os valores da altitude, latitude, longitude e a data (horário). Para calcular a distância foi utilizada a biblioteca [latlong](https://pub.dev/packages/latlong).
 
