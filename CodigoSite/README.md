@@ -1,16 +1,5 @@
-# apps_flutter2
+# Site do SimuladorCarroEletrico
 
-A new Flutter project.
+Não é recomendado simplesmente baixar os arquivos e tentar rodar direto. O melhor seria criar um projeto do zero e ir substituindo arquivos-chave como a pasta lib, o androidmanifest, o pubspec.yaml e outras pastas/arquivos.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
