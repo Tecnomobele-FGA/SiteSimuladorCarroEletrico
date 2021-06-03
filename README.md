@@ -110,4 +110,6 @@ List<double> diff(List lista){
 ```
 
 
-Para uma análise mais detalhada, favor checar o código completo.
+Para uma análise mais detalhada, favor checar o código completo. 
+
+Os arquivos que apresentam calculo são: gps.dart, CalcularMeusArquivos.dart, LerArquivo.dart. Os calculos estão detalhados acima, mas você pode dar uma olhada mais detalhada [clicando aqui](https://github.com/Tecnomobele-FGA/SiteSimuladorCarroEletrico/tree/main/CodigoSite/lib)
