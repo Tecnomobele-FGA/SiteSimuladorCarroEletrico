@@ -9,7 +9,8 @@ import 'package:xml/xml.dart' as xml;
 import 'HomeScreen.dart';
 import 'LoginCadastro_Screen.dart';
 import 'models/user_model.dart';
-import 'package:google_static_maps_controller/google_static_maps_controller.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class CalcularMeusArquivos extends StatefulWidget {
   const CalcularMeusArquivos({Key? key}) : super(key: key);
@@ -28,7 +29,7 @@ class _CalcularMeusArquivosState extends State<CalcularMeusArquivos> {
   List<double> longitude  = [];
   List<double> altitude   = [];
   List<double> velocidade = [];
-  List<Location> localizacao = [];
+  List<LatLng> localizacao = [];
   List tempo = [];
   int segundaVez = 0;
   List<double> Pot = [];
@@ -42,9 +43,11 @@ class _CalcularMeusArquivosState extends State<CalcularMeusArquivos> {
   bool erroTamanho = false;
   double progresso = 0;
   String caminho = "";
-  double latitudeAgora = 0;
-  double longitudeAgora = 0;
   int lixo = 0;
+  Set<Polyline> polyline = Set<Polyline>();
+  late PolylinePoints polylinePoints;
+  //Completer<GoogleMapController> _controler = Completer();
+
   @override
   Widget build(BuildContext context) {
     return ScopedModelDescendant<UserModel>(
@@ -217,46 +220,60 @@ class _CalcularMeusArquivosState extends State<CalcularMeusArquivos> {
                     ),
                   ),
                 ),
-                //TODO TENTANDO COLOCAR O MINI MAPA COM A TRAJETÓRIA
-                /*Visibility(
+                Visibility(
                   visible: terminou,
-                  child: Padding(
-                    padding: EdgeInsets.all(8),
-                    child: StaticMap(
-                      maptype: StaticMapType.roadmap,
-                      width: MediaQuery.of(context).size.width - 10,
-                      height: MediaQuery.of(context).size.height - 80,
-                      scaleToDevicePixelRatio: true,
-                      googleApiKey: "AIzaSyDvhwkmqP_T4hpAmYW1XBt40t4CAcb22xE",
-                      paths: <Path>[
-                        Path(
-                          weight: 3,
-                          color: Colors.blue,
-                          points: localizacao,
-                          /*points: <Location>[
-                            terminou ? localizacao.first : Location(-3.352538, -60.163816),
-                            terminou ? localizacao[int.parse((localizacao.length/2).toString())] : Location(-3.352538, -60.163816),
-                            terminou ? localizacao.last: Location(-3.352538, -60.163816),
-                          ],*/
-                        ),
-                      ],
-                      markers: <Marker>[
-                        Marker(
-                          color: Colors.red,
-                          locations: [
-                            terminou ? localizacao[0] : Location(-3.352538, -60.163816),
+                  child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Column(
+                          children: [
+                            Text("Mapa do percurso"),
+                            Text("Dica: use o botão direito para movimentar o mapa"),
                           ],
                         ),
-                      ],
-                    ),
+                      )
                   ),
-                ),*/
+                ),
+                Visibility(
+                    visible: terminou,
+                    child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width - 20,
+                          height: MediaQuery.of(context).size.height - 100,
+                          child: GoogleMap(
+                            myLocationEnabled: false,
+                            compassEnabled: false,
+                            tiltGesturesEnabled: false,
+                            polylines: polyline,
+                            initialCameraPosition: CameraPosition(
+                              target: terminou ? localizacao[0] : LatLng(-3.352538, -60.163816),
+                              zoom: 15.0,
+                            ),
+                            onMapCreated: (GoogleMapController controller){
+                              setState(() {
+                                polyline.add(
+                                    Polyline(
+                                        width: 7,
+                                        polylineId: PolylineId('polyLine'),
+                                        points: localizacao,
+                                        color: Colors.blueAccent
+                                    )
+                                );
+                              });
+                            },
+                          ),
+                        )
+                    )
+                )
               ],
             ),
           );
         }
     );
   }
+
+
   Future<List> pegarArquivo(BuildContext context, var suporte) async{
     List dados = [];
     var raw = xml.XmlDocument.parse(suporte);
@@ -267,7 +284,8 @@ class _CalcularMeusArquivosState extends State<CalcularMeusArquivos> {
       altitude.add(double.parse(element.findElements("ele").first.text));
       tempo.add(DateTime.parse(element.findElements("time").first.text).millisecondsSinceEpoch / 1000);
       //latitudeAgora != double.parse(double.parse(element.attributes.first.value).toStringAsPrecision(4)) || longitudeAgora != double.parse(double.parse(element.attributes.last.value).toStringAsPrecision(4)) ? localizacao.add(Location(double.parse(double.parse(element.attributes.first.value).toStringAsPrecision(4)), double.parse(double.parse(element.attributes.last.value).toStringAsPrecision(4)))) : lixo=1;
-      //localizacao.add(Location(double.parse(double.parse(element.attributes.first.value).toStringAsPrecision(4)), double.parse(double.parse(element.attributes.last.value).toStringAsPrecision(4))));
+      //localizacao.add(LatLng(double.parse(double.parse(element.attributes.first.value).toStringAsPrecision(4)), double.parse(double.parse(element.attributes.last.value).toStringAsPrecision(4))));
+      localizacao.add(LatLng(double.parse(element.attributes.first.value), double.parse(element.attributes.last.value)));
       return dados.add(element.findElements("ele").first.text);
     }).toList();
   }
