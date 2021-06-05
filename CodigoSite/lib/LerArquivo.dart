@@ -5,13 +5,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'HomeScreen.dart';
-import 'package:latlong/latlong.dart';
+import 'package:latlong/latlong.dart' as latlongg;
 import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:file_picker/file_picker.dart';
-import 'package:time/time.dart';
 import 'LoginCadastro_Screen.dart';
 import 'models/user_model.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class LerArquivo extends StatefulWidget {
   const LerArquivo({Key? key}) : super(key: key);
@@ -42,6 +43,10 @@ class _LerArquivoState extends State<LerArquivo> {
   bool erroTamanho = false;
   double progresso = 0;
   String caminho = "";
+  Set<Polyline> polyline = Set<Polyline>();
+  late PolylinePoints polylinePoints;
+  List<LatLng> localizacao = [];
+
   @override
   Widget build(BuildContext context) {
     return ScopedModelDescendant<UserModel>(
@@ -263,6 +268,52 @@ class _LerArquivoState extends State<LerArquivo> {
                     ),
                   ),
                 ),
+                Visibility(
+                  visible: terminou,
+                  child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Column(
+                          children: [
+                            Text("Mapa do percurso"),
+                            Text("Dica: use o botão direito para movimentar o mapa"),
+                          ],
+                        ),
+                      )
+                  ),
+                ),
+                Visibility(
+                    visible: terminou,
+                    child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width - 20,
+                          height: MediaQuery.of(context).size.height - 100,
+                          child: GoogleMap(
+                            myLocationEnabled: false,
+                            compassEnabled: false,
+                            tiltGesturesEnabled: false,
+                            polylines: polyline,
+                            initialCameraPosition: CameraPosition(
+                              target: terminou ? localizacao[0] : LatLng(-3.352538, -60.163816),
+                              zoom: 15.0,
+                            ),
+                            onMapCreated: (GoogleMapController controller){
+                              setState(() {
+                                polyline.add(
+                                    Polyline(
+                                        width: 7,
+                                        polylineId: PolylineId('polyLine'),
+                                        points: localizacao,
+                                        color: Colors.blueAccent
+                                    )
+                                );
+                              });
+                            },
+                          ),
+                        )
+                    )
+                )
               ],
             ),
           );
@@ -282,6 +333,7 @@ class _LerArquivoState extends State<LerArquivo> {
       longitude.add(double.parse(element.attributes.last.value));
       altitude.add(double.parse(element.findElements("ele").first.text));
       tempo.add(DateTime.parse(element.findElements("time").first.text).millisecondsSinceEpoch / 1000);
+      localizacao.add(LatLng(double.parse(element.attributes.first.value), double.parse(element.attributes.last.value)));
       //arquivao.add(element.attributes.first.value);
       //arquivao.add(element.findElements("lat").first.text);
       return dados.add(element.findElements("ele").first.text);
@@ -297,11 +349,11 @@ class _LerArquivoState extends State<LerArquivo> {
   }
   Future<int> calcula() async{
     List distancia = [];
-    final Distance distance = new Distance();
+    final latlongg.Distance distance = new latlongg.Distance();
     for(int i = 0; i < latitude.length - 1; i++){
       distancia.add(distance(
-          new LatLng(latitude[i],longitude[i]),
-          new LatLng(latitude[i+1],longitude[i+1])
+          new latlongg.LatLng(latitude[i],longitude[i]),
+          new latlongg.LatLng(latitude[i+1],longitude[i+1])
       ));
     }
     for(int i = 0; i < distancia.length; i++){
