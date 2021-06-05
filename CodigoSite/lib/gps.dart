@@ -8,6 +8,8 @@ import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 import 'package:google_static_maps_controller/google_static_maps_controller.dart';
 import 'LoginCadastro_Screen.dart';
 import 'models/user_model.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 //import 'package:latlong/latlong.dart';
 
 class Gps extends StatefulWidget {
@@ -36,7 +38,9 @@ class _GpsState extends State<Gps> {
   double potMax = 0;
   double energia = 0;
   String salvar = "";
-  List<Location> localizacao = [];
+  List<LatLng> localizacao = [];
+  Set<Polyline> polyline = Set<Polyline>();
+  late PolylinePoints polylinePoints;
 
   @override
   Widget build(BuildContext context) {
@@ -260,41 +264,59 @@ class _GpsState extends State<Gps> {
                     child: Text(salvar),
                   ),
                 ),
-                //TODO TENTANDO COLOCAR O MINI MAPA COM A TRAJETÓRIA
-                /*Visibility(
+                Visibility(
                   visible: terminou,
-                  child: Padding(
-                    padding: EdgeInsets.all(8),
-                    child: StaticMap(
-                      maptype: StaticMapType.roadmap,
-                      width: MediaQuery.of(context).size.width - 10,
-                      height: MediaQuery.of(context).size.height - 80,
-                      scaleToDevicePixelRatio: true,
-                      googleApiKey: "AIzaSyDvhwkmqP_T4hpAmYW1XBt40t4CAcb22xE",
-                      paths: <Path>[
-                        Path(
-                          weight: 3,
-                          color: Colors.blue,
-                          points: localizacao,
-                        )
-                      ],
-                      markers: <Marker>[
-                        Marker(
-                          color: Colors.red,
-                          locations: [
-                            terminou ? localizacao[0] : Location(-3.352538, -60.163816),
+                  child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Column(
+                          children: [
+                            Text("Mapa do percurso"),
+                            Text("Dica: use o botão direito para movimentar o mapa"),
                           ],
                         ),
-                      ],
-                    ),
+                      )
                   ),
-                ),*/
+                ),
+                Visibility(
+                    visible: terminou,
+                    child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width - 20,
+                          height: MediaQuery.of(context).size.height - 100,
+                          child: GoogleMap(
+                            myLocationEnabled: false,
+                            compassEnabled: false,
+                            tiltGesturesEnabled: false,
+                            polylines: polyline,
+                            initialCameraPosition: CameraPosition(
+                              target: terminou ? localizacao[0] : LatLng(-3.352538, -60.163816),
+                              zoom: 15.0,
+                            ),
+                            onMapCreated: (GoogleMapController controller){
+                              setState(() {
+                                polyline.add(
+                                    Polyline(
+                                        width: 7,
+                                        polylineId: PolylineId('polyLine'),
+                                        points: localizacao,
+                                        color: Colors.blueAccent
+                                    )
+                                );
+                              });
+                            },
+                          ),
+                        )
+                    )
+                )
               ],
             ),
           );
         }
     );
   }
+
   Future<int> Gps() async{
     while(comecou == true){
       Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
@@ -302,7 +324,7 @@ class _GpsState extends State<Gps> {
       altitude.add(position.altitude);
       longitude.add(position.longitude);
       velocidade.add(position.speed);
-      localizacao.add(Location(position.latitude, position.longitude));
+      localizacao.add(LatLng(position.latitude, position.longitude));
       setState(() {
         posicoesColhidas += 1;
         longitudeAgora = position.longitude;
