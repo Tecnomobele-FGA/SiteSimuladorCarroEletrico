@@ -1,4 +1,4 @@
-import 'package:apps_flutter2/HomeScreen.dart';
+import 'package:apps_flutter2/Telas/HomeScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';

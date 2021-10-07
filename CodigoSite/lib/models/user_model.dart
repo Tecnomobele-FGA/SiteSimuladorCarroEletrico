@@ -16,10 +16,14 @@ class UserModel extends Model {
   late bool isArquivo;
   late List<dynamic> velocidade;
   late List<dynamic> altitude;
+  late bool administrador;
   String nome = "";
   FirebaseAuth _auth = FirebaseAuth.instance;
   User? firebaseUser;
   Map<String, dynamic> userData = Map();
+  double massa = -999;
+  double frontal = -999;
+  double ca = -999;
 
 
   bool isLoading = false;
@@ -85,8 +89,21 @@ class UserModel extends Model {
     }
   }
 
+  void Administrador() async{
+    if(isLoggedIn() == true) {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection(
+          'usuarios').doc("${firebaseUser!.uid}").get();
+      snapshot["administrador"] == true ? administrador = true : administrador == false;
+      notifyListeners();
+    }else{
+      administrador = false;
+    }
+  }
+
   Future<Null> _saveUserData(Map<String, dynamic> userData) async{
     this.userData = userData;
     await FirebaseFirestore.instance.collection("usuarios").doc(firebaseUser!.uid).set(userData);
+    await FirebaseFirestore.instance.collection("usuarios").doc(firebaseUser!.uid).update({"administrador" : false});
   }
 }
+
